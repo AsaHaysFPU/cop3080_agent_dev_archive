@@ -67,7 +67,18 @@ def format_docs(docs: list[Document]) -> str:
 
 
 # Implementation 2 — LCEL chain
-#PLACEHOLDER# build_rag_chain
+def build_rag_chain():
+    retriever = RunnableLambda(lambda q: retrieve_docs(q))
+
+    chain = (
+        RunnablePassthrough.assign(
+            context=itemgetter("question") | retriever | format_docs
+        )
+        | prompt_template
+        | llm
+        | StrOutputParser()
+    )
+    return chain
 
 
 
@@ -75,17 +86,19 @@ if __name__ == "__main__":
     query = "What storage options does Proxmox support and which is best for a home lab?"
 
     # Option 0 — raw LLM (no RAG, no context)
-    #PLACEHOLDER#
-  
-
-  
-
-
+    print("\n" + "=" * 70)
+    print("OPTION 0: Raw LLM — no RAG context")
+    print("=" * 70)
+    raw_response = llm.invoke([HumanMessage(content=query)])
+    print(raw_response.content)
    
     # Option 2 — LCEL chain
     print("\n" + "=" * 70)
     print("OPTION 2: RAG with LCEL chain")
     print("=" * 70)
-    #PLACEHOLDER#
+    
+    rag_chain = build_rag_chain()
+    answer_lcel = rag_chain.invoke({"question": query})
+    print(answer_lcel)
 
 
